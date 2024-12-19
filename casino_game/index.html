@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игровой автомат</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #282c34;
+            color: white;
+        }
+
+        #login,
+        #register {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #game {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .slot-machine {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            perspective: 1000px;
+        }
+
+        .slot {
+            width: 100px;
+            height: 100px;
+            margin: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            background-color: #444;
+            border: 2px solid #888;
+            border-radius: 10px;
+            transform-style: preserve-3d;
+            transform-origin: center;
+            animation-timing-function: ease-in-out;
+        }
+
+        @keyframes spinSlot3D {
+            0% {
+                transform: rotateX(0deg);
+            }
+
+            25% {
+                transform: rotateX(90deg);
+            }
+
+            50% {
+                transform: rotateX(180deg);
+            }
+
+            75% {
+                transform: rotateX(270deg);
+            }
+
+            100% {
+                transform: rotateX(360deg);
+            }
+        }
+
+        .animated {
+            animation: spinSlot3D 1.2s infinite;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #888;
+        }
+
+        .balance {
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+
+        .win-message {
+            margin: 20px 0;
+            font-size: 1.5em;
+            color: #27ae60;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            padding: 10px 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            color: #f39c12;
+        }
+
+        nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        nav span {
+            font-size: 1.2em;
+        }
+
+        aside {
+            width: 200px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #222;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        aside h2 {
+            color: #f39c12;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        aside p {
+            font-size: 1.1em;
+        }
+
+        #game-container {
+            margin-left: 220px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="login">
+        <h1>Вход</h1>
+        <input type="text" id="login-username" placeholder="Имя пользователя" required>
+        <input type="password" id="login-password" placeholder="Пароль" required>
+        <button onclick="login()">Войти</button>
+        <p>Нет аккаунта? <button onclick="showRegister()">Регистрация</button></p>
+    </div>
+
+    <div id="register" style="display:none;">
+        <h1>Регистрация</h1>
+        <input type="text" id="register-username" placeholder="Имя пользователя" required>
+        <input type="password" id="register-password" placeholder="Пароль" required>
+        <button onclick="register()">Зарегистрироваться</button>
+        <p>Уже есть аккаунт? <button onclick="showLogin()">Войти</button></p>
+    </div>
+
+    <header>
+        <h1>Игровой автомат</h1>
+        <nav>
+            <span id="user-display">Пользователь: Гость</span>
+            <span id="balance-display">Баланс: 0 ₽</span>
+        </nav>
+    </header>
+
+    <aside>
+        <h2>Информация</h2>
+        <p id="aside-user">Пользователь: Гость</p>
+        <p id="aside-balance">Баланс: 0 ₽</p>
+    </aside>
+
+    <div id="game-container">
+        <div id="game">
+            <h1>Добро пожаловать в игровой автомат</h1>
+            <div class="slot-machine">
+                <div class="slot" id="slot1">?</div>
+                <div class="slot" id="slot2">?</div>
+                <div class="slot" id="slot3">?</div>
+            </div>
+            <button id="spin-button" onclick="spin()">Крутить (10 ₽)</button>
+            <div class="win-message" id="win-message"></div>
+        </div>
+    </div>
+
+    <script>
+        let users = {
+            "даша": { username: "даша", password: "1", balance: 1000 }
+        };
+
+        let currentUser = null;
+
+        function showLogin() {
+            document.getElementById('register').style.display = 'none';
+            document.getElementById('login').style.display = 'flex';
+        }
+
+        function showRegister() {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('register').style.display = 'flex';
+        }
+
+        function register() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+
+            if (users[username]) {
+                alert('Имя пользователя уже занято!');
+                return;
+            }
+
+            users[username] = { username, password, balance: 100 };
+            alert('Аккаунт успешно создан! Пожалуйста, войдите.');
+            showLogin();
+        }
+
+        function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (users[username] && users[username].password === password) {
+                currentUser = users[username];
+                updateUserDisplay();
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('game').style.display = 'block';
+            } else {
+                alert('Неверное имя пользователя или пароль!');
+            }
+        }
+
+        function updateUserDisplay() {
+            document.getElementById('user-display').innerText = `Пользователь: ${currentUser.username}`;
+            document.getElementById('balance-display').innerText = `Баланс: ${currentUser.balance} ₽`;
+            document.getElementById('aside-user').innerText = `Пользователь: ${currentUser.username}`;
+            document.getElementById('aside-balance').innerText = `Баланс: ${currentUser.balance} ₽`;
+        }
+
+
+        function spin() {
+            if (currentUser.balance < 10) {
+                alert('Недостаточно средств для игры!');
+                return;
+            }
+
+            currentUser.balance -= 10;
+            updateUserDisplay();
+            document.getElementById('win-message').innerText = '';
+
+            const symbols = ['🍒', '🍋', '🍊', '7️⃣', '⭐', '🍉'];
+
+            const slot1 = document.getElementById('slot1');
+            const slot2 = document.getElementById('slot2');
+            const slot3 = document.getElementById('slot3');
+
+            slot1.classList.add('animated');
+            slot2.classList.add('animated');
+            slot3.classList.add('animated');
+
+            setTimeout(() => {
+                slot1.classList.remove('animated');
+                slot2.classList.remove('animated');
+                slot3.classList.remove('animated');
+
+                const result1 = symbols[Math.floor(Math.random() * symbols.length)];
+                const result2 = symbols[Math.floor(Math.random() * symbols.length)];
+                const result3 = symbols[Math.floor(Math.random() * symbols.length)];
+
+                slot1.innerText = result1;
+                slot2.innerText = result2;
+                slot3.innerText = result3;
+
+                if (result1 === result2 && result2 === result3) {
+                    const winnings = 1000;
+                    currentUser.balance += winnings;
+                    document.getElementById('win-message').innerText = `Ты выйграл!!!! ${winnings}!`;
+                } else {
+                    document.getElementById('win-message').innerText = 'Крутить заного!';
+                }
+
+                document.getElementById('balance').innerText = currentUser.balance;
+
+                if (currentUser.balance < 10) {
+                    document.getElementById('spin-button').disabled = true;
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>
